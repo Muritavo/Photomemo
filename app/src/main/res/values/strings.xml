@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">Photo memo</string>
+    <string name="camera">Abrir Camera</string>
+    <string name="title_activity_adicionar_descricao">Adicionar descrição</string>
+    <string name="adicionar_descricao_hint">Adicione a descrição da imagem aqui…</string>
+    <string name="salvar">Salvar</string>
+    <string name="descartar">Descartar</string>
+    <string name="changeViewToListView">Modo Lista</string>
+    <string name="changeViewGridView">Modo Grade</string>
+    <string name="titulo">"Título: "</string>
+    <string name="dataDeCriacao">"Data: "</string>
+    <string name="descricao_inexistente">Não existe descrição para esta imagem, clique em Editar para adicionar uma…</string>
+    <string name="editar">Editar</string>
+    <string name="voltar">Voltar</string>
+    <string name="confirmacao_title">Atenção</string>
+    <string name="confirmacao_message">"Tem certeza que deseja descartar essa descrição? \n A imagem será mantida."</string>
+    <string name="confirmacao_positiva">Sim</string>
+    <string name="deletar">Deletar</string>
+    <string name="descricaoLabel"><b>"Descrição: "</b></string>
+    <string name="search">Busca por descrição</string>
+    <string name="busca_hint">Busca...</string>
+    <string name="sendImage">Enviar imagem</string>
+    <string name="sendIntentTitle">Enviar Imagem</string>
+    <string name="title_activity_compartilhar_imagem">Escolha as imagens</string>
+    <string name="enviar">Enviar Imagens</string>
+    <string name="aviso">Selecione pelo menos uma imagem</string>
+    <string name="atencao">"Tem certeza que deseja deletar essa imagem? \n Essa é uma ação irreversivel."</string>
+</resources>

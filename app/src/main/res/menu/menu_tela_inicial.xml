@@ -1,0 +1,18 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" tools:context=".TelaInicial">
+    <item android:id="@+id/abrir_camera" android:title="@string/camera"
+        android:orderInCategory="1" android:showAsAction="ifRoom"
+        android:icon="@drawable/ic_camera_enhance_white_24dp"/>
+    <item android:id="@+id/list_view" android:title="@string/changeViewToListView"
+        android:orderInCategory="2" android:showAsAction="ifRoom"
+        android:icon="@drawable/ic_list_white_24dp"/>
+    <item android:id="@+id/grid_view" android:title="@string/changeViewGridView"
+        android:orderInCategory="2" android:showAsAction="ifRoom"
+        android:icon="@drawable/ic_view_module_white_24dp"/>
+    <item android:id="@+id/search" android:title="@string/search"
+        android:orderInCategory="3" android:showAsAction="always"
+        android:icon="@drawable/ic_search_white_24dp"/>
+    <item android:id="@+id/compartilharImagens" android:title="@string/sendImage"
+        android:orderInCategory="4" android:showAsAction="ifRoom"
+        android:icon="@drawable/ic_send_white_24dp"/>
+</menu>

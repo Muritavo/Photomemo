@@ -1,0 +1,7 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.muritavo.photomemo.CompartilharImagem">
+    <item android:id="@+id/enviar" android:title="@string/enviar"
+        android:orderInCategory="1" android:showAsAction="always"
+        android:icon="@drawable/ic_send_white_24dp"/>
+</menu>
