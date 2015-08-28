@@ -226,7 +226,7 @@ public class TelaInicial extends Activity {
         TextView descricao;
         TextView data;
         TextView titulo;
-    } //Mantem as referencias para cada item da lista que for criada
+    }
     /**
      * Adaptador utilizado para popular a lista ou grade
      */
@@ -236,6 +236,7 @@ public class TelaInicial extends Activity {
         public imageCursorAdapter (Context context, Cursor c){
             super(context, c);
         }
+
         @Override
         public View newView (Context context, Cursor cursor, ViewGroup parent) {
             LayoutInflater inflater = LayoutInflater.from(context);
@@ -326,9 +327,8 @@ public class TelaInicial extends Activity {
         } //Caso não exista um Adaptador ele cria um novo
         else adapter.changeCursor(cursor);
     }
-
     /**
-     *
+     * Renova o layout do usuario cada vez que o conteudo for modificado
      */
     private void renovarLayout() {
         layoutLista.removeAllViews();
@@ -347,21 +347,19 @@ public class TelaInicial extends Activity {
             layoutLista.addView(lista, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         }
         ActivityCompat.invalidateOptionsMenu(this);
-    } //Cria uma grade ou uma lista, de acordo com o modo de visualização
-
+    }
     /**
-     *
+     * Inicializa uma atividade da câmera para que o usuario possa capturar uma nova foto
      */
     private void requisitaFoto(){
         Uri uri = criarCaminho();
         Intent abrirCamera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         abrirCamera.putExtra(MediaStore.EXTRA_OUTPUT, uri);
         startActivityForResult(abrirCamera, 1);
-    } //Requisita uma atividade de camera que vai retornar uma foto
-
+    }
     /**
-     *
-     * @return
+     *  Cria um Uri apontando para um arquivo onde vai ser salvo a imagem capturada pela camêra
+     * @return O caminho Uri
      */
     private Uri criarCaminho(){
         dataDeCaptura = System.currentTimeMillis();
@@ -372,7 +370,9 @@ public class TelaInicial extends Activity {
         caminhoDaImagem = Uri.parse("file:" + photoMemoDirectory.getAbsolutePath() + "/" + tituloDaImagem + ".jpg");
         return caminhoDaImagem;
     } //Cria um arquivo onde será armazenada a foto
-
+    /**
+     * Atualiza os resultados cada vez que o usuario modificar o argumento da busca.
+     */
     private TextWatcher atualizaBusca = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -391,6 +391,9 @@ public class TelaInicial extends Activity {
         }
     }; //É executado cada vez que o texto de busca é modificado
 
+    /**
+     * Inseri uma imagem temporária enquanto a imagem é carregada
+     */
     static class AsyncDrawable extends BitmapDrawable {
 
         private final WeakReference<LoadBitmapIcon> bitmapWorkerTaskWeakReference;
