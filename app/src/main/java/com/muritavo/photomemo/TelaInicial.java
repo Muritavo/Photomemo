@@ -167,6 +167,7 @@ public class TelaInicial extends Activity {
                     public void onClick(View v) {
                         layoutCampoDeBusca.setVisibility(View.GONE);
                         criaAdapter();
+                        invalidateOptionsMenu();
                     }
                 });
                 break;
@@ -244,6 +245,7 @@ public class TelaInicial extends Activity {
             else {
                 View v = inflater.inflate(R.layout.list_view_button, parent, false);
                 holder.imagem = (ImageView) v.findViewById(R.id.icone);
+                holder.imagem.setMinimumHeight(dimensoes.y / 3);
                 holder.titulo = (TextView) v.findViewById(R.id.titulo);
                 holder.data = (TextView) v.findViewById(R.id.data);
                 holder.descricao = (TextView) v.findViewById(R.id.descricao);

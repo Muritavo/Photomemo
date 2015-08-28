@@ -23,14 +23,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,13 +37,15 @@ public class CompartilharImagem extends ListActivity {
     private LruCache<String, Bitmap> imagensEmCache;
     private SimpleDateFormat formatter;
     private ListView lista;
-    private ArrayList<Uri> files;
+    private ArrayList<Uri> imagensSelecionadas;
     private Point dimensoes;
+    private ImageLoaderAsync carregadorDeImagens;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        files = new ArrayList<Uri>(); // Array que vai armazenar o caminho para cada imagem que sera enviada
+        carregadorDeImagens = ((Photomemo) this.getApplication()).getCarregadorDeImagem(getApplicationContext());
+        imagensSelecionadas = new ArrayList<Uri>(); // Array que vai armazenar o caminho para cada imagem que sera enviada
         formatter = ((Photomemo) getApplication()).getFormatter(); // Formato de data
         imagensEmCache = ((Photomemo) getApplication()).getImagensEmCache(); // Variavel de aplicacao que guarda os icones de cada imagem
         ContentResolver cr = getContentResolver();
@@ -82,18 +82,16 @@ public class CompartilharImagem extends ListActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.enviar) {
-            if (files.size() == 0){
+            if (imagensSelecionadas.size() == 0){
                 Toast.makeText(this, getResources().getString(R.string.aviso), Toast.LENGTH_LONG).show();
             }
             else {
                 Intent enviarImagens = new Intent(Intent.ACTION_SEND_MULTIPLE);
                 enviarImagens.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 enviarImagens.setType("image/jpeg");
-                enviarImagens.putParcelableArrayListExtra(Intent.EXTRA_STREAM, files);
+                enviarImagens.putParcelableArrayListExtra(Intent.EXTRA_STREAM, imagensSelecionadas);
                 startActivity(Intent.createChooser(enviarImagens, getResources().getString(R.string.enviar)));
-                files.clear();
             }
-            lista.getCheckedItemIds();
             return true;
         }
 
@@ -109,7 +107,6 @@ public class CompartilharImagem extends ListActivity {
         TextView descricao;
         TextView data;
         TextView titulo;
-        ImageView checkBox;
     } // mantem todos os objetos pertencentes a view para que estes nao se percam durante a reciclagem de views do objeto ListView
     public class ImageCursorAdapter extends CursorAdapter {
         ViewHolder holder;
@@ -126,7 +123,6 @@ public class CompartilharImagem extends ListActivity {
             holder.titulo = (TextView) v.findViewById(R.id.titulo);
             holder.data = (TextView) v.findViewById(R.id.data);
             holder.descricao = (TextView) v.findViewById(R.id.descricao);
-            holder.checkBox = (ImageView) v.findViewById(R.id.checked);
             v.setTag(holder);
             return v;
         }
@@ -142,9 +138,9 @@ public class CompartilharImagem extends ListActivity {
             }
             holder.caminhoDaImagem = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
             if (imagensEmCache.get(holder.caminhoDaImagem) == null){
-                loadBitmap(holder.caminhoDaImagem, holder.imagem);
+                carregadorDeImagens.carregarBitmap(holder.caminhoDaImagem, holder.imagem, false);
             }
-            else if (files.contains(Uri.parse("file://" + holder.caminhoDaImagem))) {
+            else if (imagensSelecionadas.contains(Uri.parse("file://" + holder.caminhoDaImagem))) {
                 holder.imagem.setImageDrawable(getResources().getDrawable(R.drawable.ic_check_black_48dp));
             }
             else {
@@ -156,97 +152,18 @@ public class CompartilharImagem extends ListActivity {
         }
     }
 
-    static class AsyncDrawable extends BitmapDrawable {
-
-        private final WeakReference<LoadBitmapIcon> bitmapWorkerTaskWeakReference;
-        public AsyncDrawable (Resources res, Bitmap bitmap, LoadBitmapIcon bitmapWorkerTask){
-            super (res, bitmap);
-            bitmapWorkerTaskWeakReference = new WeakReference<LoadBitmapIcon>(bitmapWorkerTask);
-        }
-
-        public LoadBitmapIcon getBitmapWorkerTask(){
-            return  bitmapWorkerTaskWeakReference.get();
-        }
-
-    } // Inseri uma imagem temporaria na lista enquanto um icone é criado
-    private void loadBitmap (String caminhoDaImagem, ImageView imageView) {
-        if (cancelPotentialWork(caminhoDaImagem, imageView)) {
-            final LoadBitmapIcon task = new LoadBitmapIcon(imageView);
-            final AsyncDrawable asyncDrawable = new AsyncDrawable(getResources(), BitmapFactory.decodeResource(getResources(), R.drawable.ic_crop_original_black_48dp), task);
-            imageView.setImageDrawable(asyncDrawable);
-            task.execute(caminhoDaImagem);
-        }
-    }
-    public static boolean cancelPotentialWork (String caminho, ImageView imageView){
-        final LoadBitmapIcon bitmapWorkerTask = getBitmapWorkerTask(imageView);
-
-        if (bitmapWorkerTask != null){
-            final String bitmapPath = bitmapWorkerTask.caminho;
-
-            if (bitmapPath.equals("") || bitmapPath.equals(caminho)) {
-                bitmapWorkerTask.cancel(true);
-            } else {
-                return false;
-            }
-        }
-
-        return true;
-    } //Verifica se uma operação esta sendo executada em segundo plano e a finaliza caso nao seja mais necessaria
-    private static LoadBitmapIcon getBitmapWorkerTask (ImageView imageView) {
-        if (imageView != null){
-            final Drawable drawable = imageView.getDrawable();
-            if (drawable instanceof AsyncDrawable){
-                final AsyncDrawable asyncDrawable = (AsyncDrawable) drawable;
-                return asyncDrawable.getBitmapWorkerTask();
-            }
-        }
-        return null;
-    }
-    private class LoadBitmapIcon extends AsyncTask<Object, Object, Bitmap>{
-
-        private final WeakReference<ImageView> imageViewWeakReference;
-        private String caminho = "";
-        public LoadBitmapIcon (ImageView imageView){
-            imageViewWeakReference = new WeakReference<ImageView>(imageView);
-        }
-
-        @Override
-        protected Bitmap doInBackground(Object... params) {
-            caminho = (String) params[0];
-            Bitmap bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(caminho), TelaInicial.dimensoes.x / 3, TelaInicial.dimensoes.x / 3);
-            imagensEmCache.put(caminho, bitmap);
-            return bitmap;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            if (isCancelled()) {
-                bitmap = null;
-            }
-
-            if (imageViewWeakReference != null && bitmap != null) {
-                final ImageView imageView = imageViewWeakReference.get();
-                final LoadBitmapIcon loadBitmapIcon = getBitmapWorkerTask(imageView);
-                if (this == loadBitmapIcon && imageView != null){
-                    imageView.setImageBitmap(bitmap);
-                }
-            }
-        }
-
-    }
-
     private AdapterView.OnItemClickListener listener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             ViewHolder holder = (ViewHolder) view.getTag();
-            if (files.contains(Uri.parse("file://" + holder.caminhoDaImagem))){
-                files.remove(Uri.parse("file://" + holder.caminhoDaImagem));
-                if (imagensEmCache.get(holder.caminhoDaImagem) == null) holder.imagem.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.ic_crop_original_black_48dp));
+            if (imagensSelecionadas.contains(Uri.parse("file://" + holder.caminhoDaImagem))){
+                imagensSelecionadas.remove(Uri.parse("file://" + holder.caminhoDaImagem));
+                if (imagensEmCache.get(holder.caminhoDaImagem) == null) carregadorDeImagens.carregarBitmap(holder.caminhoDaImagem, holder.imagem, false);
                 else holder.imagem.setImageBitmap(imagensEmCache.get(holder.caminhoDaImagem));
             }
             else {
-                files.add(Uri.parse("file://" + holder.caminhoDaImagem));
-                holder.imagem.setImageDrawable(getResources().getDrawable(R.drawable.ic_check_black_48dp));
+                imagensSelecionadas.add(Uri.parse("file://" + holder.caminhoDaImagem));
+                holder.imagem.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.ic_check_black_48dp));
             }
         }
     };
