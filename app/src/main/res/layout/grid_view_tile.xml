@@ -5,6 +5,7 @@
     android:id="@+id/tile"
     android:padding="2dp">
     <ImageView
+        android:scaleType="centerCrop"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/icone"/>

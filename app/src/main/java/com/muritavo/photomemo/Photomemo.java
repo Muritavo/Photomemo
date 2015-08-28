@@ -1,6 +1,7 @@
 package com.muritavo.photomemo;
 
 import android.app.Application;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.util.LruCache;
@@ -11,6 +12,7 @@ import java.util.Formatter;
 public class Photomemo extends Application {
     private LruCache<String, Bitmap> imagensEmCache;
     private SimpleDateFormat formatter;
+    private ImageLoaderAsync carregadorDeImagem;
 
     /**
      * Reserva um espaço da memória para armazenar os icones de cada imagem
@@ -35,5 +37,12 @@ public class Photomemo extends Application {
             formatter = new SimpleDateFormat("dd/MM/yyyy");
         }
         return formatter;
+    }
+
+    public ImageLoaderAsync getCarregadorDeImagem(Context context){
+        if (carregadorDeImagem == null){
+            carregadorDeImagem = new ImageLoaderAsync(context, getImagensEmCache());
+        }
+        return carregadorDeImagem;
     }
 }

@@ -69,12 +69,17 @@ public class TelaInicial extends Activity {
     private EditText campoDeBuscaEditText;
     private Button ocultarCampoDeBusca;
     public static Point dimensoes;
+    private ImageLoaderAsync carregadorDeImagens;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tela_inicial);
         formatter = ((Photomemo) this.getApplication()).getFormatter();
+        // Obtem o objeto que vai armazenar as imagens
+        imagensEmCache = ((Photomemo) this.getApplication()).getImagensEmCache();
+        // Obtem o objeto que vai carregar as imagens
+        carregadorDeImagens = ((Photomemo) this.getApplication()).getCarregadorDeImagem(getApplicationContext());
         cr = this.getContentResolver();
         try {
             ViewConfiguration config = ViewConfiguration.get(this);
@@ -106,10 +111,6 @@ public class TelaInicial extends Activity {
         layoutCampoDeBusca = (LinearLayout) findViewById(R.id.campoDeBusca);
         campoDeBuscaEditText = (EditText) findViewById(R.id.campoDeBuscaEditText);
         ocultarCampoDeBusca = (Button) findViewById(R.id.ocultarCampo);
-
-        // Obtem o objeto que vai armazenar as imagens
-        imagensEmCache = ((Photomemo) this.getApplication()).getImagensEmCache();
-
         criaAdapter(); //Cria o adaptador que vai ser utilizado para popular a lista.
         renovarLayout();
     }
@@ -165,17 +166,7 @@ public class TelaInicial extends Activity {
                     @Override
                     public void onClick(View v) {
                         layoutCampoDeBusca.setVisibility(View.GONE);
-                        adapter.changeCursor(cr.query(Media.EXTERNAL_CONTENT_URI, new String[]{
-                                ImageColumns._ID,
-                                ImageColumns.TITLE,
-                                ImageColumns.DATA,
-                                ImageColumns.DATE_TAKEN,
-                                ImageColumns.DESCRIPTION
-                        }, ImageColumns.TITLE + " LIKE ?", new String[]{
-                                "Photomemo%"
-                        }, ImageColumns.TITLE));
-                        invalidateOptionsMenu();
-                        renovarLayout();
+                        criaAdapter();
                     }
                 });
                 break;
@@ -272,7 +263,7 @@ public class TelaInicial extends Activity {
             }
             holder.caminhoDaImagem = cursor.getString(cursor.getColumnIndex(ImageColumns.DATA));
             if (imagensEmCache.get(holder.caminhoDaImagem) == null){
-                loadBitmap(holder.caminhoDaImagem, holder.imagem);
+                carregadorDeImagens.carregarBitmap(holder.caminhoDaImagem, holder.imagem, false);
             }
             else{
                 holder.imagem.setImageBitmap(imagensEmCache.get(holder.caminhoDaImagem));
@@ -391,88 +382,6 @@ public class TelaInicial extends Activity {
         }
     }; //É executado cada vez que o texto de busca é modificado
 
-    /**
-     * Inseri uma imagem temporária enquanto a imagem é carregada
-     */
-    static class AsyncDrawable extends BitmapDrawable {
-
-        private final WeakReference<LoadBitmapIcon> bitmapWorkerTaskWeakReference;
-        public AsyncDrawable (Resources res, Bitmap bitmap, LoadBitmapIcon bitmapWorkerTask){
-            super (res, bitmap);
-            bitmapWorkerTaskWeakReference = new WeakReference<LoadBitmapIcon>(bitmapWorkerTask);
-        }
-
-        public LoadBitmapIcon getBitmapWorkerTask(){
-            return  bitmapWorkerTaskWeakReference.get();
-        }
-
-    } // Inseri uma imagem temporaria na lista enquanto um icone é criado
-    private void loadBitmap (String caminhoDaImagem, ImageView imageView) {
-        if (cancelPotentialWork(caminhoDaImagem, imageView)) {
-            final LoadBitmapIcon task = new LoadBitmapIcon(imageView);
-            final AsyncDrawable asyncDrawable = new AsyncDrawable(getResources(), BitmapFactory.decodeResource(getResources(), R.drawable.ic_crop_original_black_48dp), task);
-            imageView.setImageDrawable(asyncDrawable);
-            task.execute(caminhoDaImagem);
-        }
-    }
-    private static boolean cancelPotentialWork (String caminho, ImageView imageView){
-        final LoadBitmapIcon bitmapWorkerTask = getBitmapWorkerTask(imageView);
-
-        if (bitmapWorkerTask != null){
-            final String bitmapPath = bitmapWorkerTask.caminho;
-
-            if (bitmapPath.equals("") || bitmapPath.equals(caminho)) {
-                bitmapWorkerTask.cancel(true);
-            } else {
-                return false;
-            }
-        }
-
-        return true;
-    } //Verifica se uma operação esta sendo executada em segundo plano e a finaliza caso nao seja mais necessaria
-    private static LoadBitmapIcon getBitmapWorkerTask (ImageView imageView) {
-        if (imageView != null){
-            final Drawable drawable = imageView.getDrawable();
-            if (drawable instanceof AsyncDrawable){
-                final AsyncDrawable asyncDrawable = (AsyncDrawable) drawable;
-                return asyncDrawable.getBitmapWorkerTask();
-            }
-        }
-        return null;
-    }
-    private class LoadBitmapIcon extends AsyncTask<Object, Object, Bitmap>{
-
-        private final WeakReference<ImageView> imageViewWeakReference;
-        private String caminho = "";
-        public LoadBitmapIcon (ImageView imageView){
-            imageViewWeakReference = new WeakReference<ImageView>(imageView);
-        }
-
-        @Override
-        protected Bitmap doInBackground(Object... params) {
-            caminho = (String) params[0];
-            Bitmap bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(caminho), dimensoes.x / 3, dimensoes.x / 3);
-            imagensEmCache.put(caminho, bitmap);
-            return bitmap;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            if (isCancelled()) {
-                bitmap = null;
-            }
-
-            if (imageViewWeakReference != null && bitmap != null) {
-                final ImageView imageView = imageViewWeakReference.get();
-                final LoadBitmapIcon loadBitmapIcon = getBitmapWorkerTask(imageView);
-                if (this == loadBitmapIcon && imageView != null){
-                    imageView.setImageBitmap(bitmap);
-                }
-            }
-        }
-
-    }
-
     private AdapterView.OnItemClickListener openImage = new AdapterView.OnItemClickListener() {
 
         @Override
@@ -481,12 +390,13 @@ public class TelaInicial extends Activity {
             AlertDialog.Builder builder = new AlertDialog.Builder(TelaInicial.this);
             LayoutInflater inflater = LayoutInflater.from(TelaInicial.this);
             View v = inflater.inflate(R.layout.imagem_selecionada, null);
+            v.setMinimumHeight(dimensoes.x);
             ImageView imagem = (ImageView) v.findViewById(R.id.preVisualizacao);
             TextView descricao = (TextView) v.findViewById(R.id.descricao);
             TextView data = (TextView) v.findViewById(R.id.data);
             data.setText(itens.dataDeCaptura);
             descricao.setText(itens.descricaoDaImagem);
-            imagem.setImageBitmap(ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(itens.caminhoDaImagem), dimensoes.x / 3, dimensoes.x / 3));
+            imagem.setImageBitmap(imagensEmCache.get(itens.caminhoDaImagem));
             builder.setTitle(getResources().getString(R.string.titulo) + itens.tituloImagem);
             builder.setView(v);
             builder.setPositiveButton(R.string.editar, new DialogInterface.OnClickListener() {
@@ -494,7 +404,6 @@ public class TelaInicial extends Activity {
                 public void onClick(DialogInterface dialog, int which) {
                     Intent adicionarDescricao = new Intent(TelaInicial.this, AdicionarDescricao.class);
                     adicionarDescricao.putExtra("path", itens.caminhoDaImagem);
-                    adicionarDescricao.putExtra("tituloDaImagem", itens.tituloImagem);
                     startActivity(adicionarDescricao);
                 }
             });
