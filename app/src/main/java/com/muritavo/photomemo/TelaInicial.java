@@ -331,12 +331,14 @@ public class TelaInicial extends Activity {
             gridItens.setNumColumns(GridView.AUTO_FIT);
             gridItens.setAdapter(adapter);
             gridItens.setOnItemClickListener(openImage);
+            gridItens.setOnItemLongClickListener(beginSelection);
             layoutLista.addView(gridItens, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         }
         else {
             ListView lista = new ListView(this);
             lista.setAdapter(adapter);
             lista.setOnItemClickListener(openImage);
+            lista.setOnItemLongClickListener(beginSelection);
             layoutLista.addView(lista, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         }
         ActivityCompat.invalidateOptionsMenu(this);
@@ -383,6 +385,14 @@ public class TelaInicial extends Activity {
         public void afterTextChanged(Editable s) {
         }
     }; //É executado cada vez que o texto de busca é modificado
+
+    private AdapterView.OnItemLongClickListener beginSelection = new AdapterView.OnItemLongClickListener() {
+        @Override
+        public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+            view.setBackgroundColor(getResources().getColor(R.color.blue));
+            return true;
+        }
+    };
 
     private AdapterView.OnItemClickListener openImage = new AdapterView.OnItemClickListener() {
 
