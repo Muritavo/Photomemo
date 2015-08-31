@@ -14,7 +14,7 @@ public class AuxiliarDoBancoDeDados extends SQLiteOpenHelper{
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String createCommand = "CREATE TABLE Photomemo (_id integer primary key autoincrement, identificador integer, FOREIGN KEY (identificador) REFERENCES imagens (_id), descricao TEXT);";
+        String createCommand = "CREATE TABLE Photomemo (_id integer primary key, descricao TEXT);";
 
         db.execSQL(createCommand);
     }
