@@ -1,5 +1,6 @@
 package com.muritavo.photomemo;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -19,11 +20,16 @@ public class BancoDeDadosPhotomemo {
         database = auxiliar.getWritableDatabase();
     }
 
-    public void close (){
+    public void fechar (){
         if (database != null) database.close();
     }
 
-    public void addDescricao (Long id, String decsricao) {
-
+    public void addDescricao (Long id, String descricao) {
+        abrir();
+        ContentValues colunas = new ContentValues();
+        colunas.put("_id", id);
+        colunas.put("descricao", descricao);
+        database.insert("Photomemo", null, colunas);
+        database.close();
     }
 }
