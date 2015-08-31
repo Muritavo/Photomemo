@@ -440,8 +440,7 @@ public class TelaInicial extends Activity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             File deletar = new File(itens.caminhoDaImagem);
-                            deletar.delete();
-                            cr.delete(Media.EXTERNAL_CONTENT_URI, ImageColumns.TITLE + " = ?", new String[]{itens.tituloImagem});
+                            if (deletar.delete()) cr.delete(Media.EXTERNAL_CONTENT_URI, ImageColumns.TITLE + " = ?", new String[]{itens.tituloImagem});
                             criaAdapter();
                             renovarLayout();
                         }

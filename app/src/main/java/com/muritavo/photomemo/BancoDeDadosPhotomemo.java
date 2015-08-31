@@ -1,5 +1,6 @@
 package com.muritavo.photomemo;
 
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -11,8 +12,10 @@ public class BancoDeDadosPhotomemo {
     private static final String DATABASE_NAME = "Photomemo";
     private SQLiteDatabase database;
     private AuxiliarDoBancoDeDados auxiliar;
+    private ContentResolver imagens;
 
     public BancoDeDadosPhotomemo (Context context){
+        imagens = context.getContentResolver();
         auxiliar = new AuxiliarDoBancoDeDados(context, DATABASE_NAME, null, 1);
     }
 
