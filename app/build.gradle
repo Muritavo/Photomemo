@@ -6,8 +6,8 @@ android {
 
     defaultConfig {
         applicationId "com.muritavo.photomemo"
-        minSdkVersion 14
-        targetSdkVersion 16
+        minSdkVersion 13
+        targetSdkVersion 13
         versionCode 1
         versionName "1.0"
     }

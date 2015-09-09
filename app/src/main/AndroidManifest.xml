@@ -29,14 +29,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.muritavo.photomemo.TelaInicial" />
         </activity>
-        <activity
-            android:name=".CompartilharImagem"
-            android:label="@string/title_activity_compartilhar_imagem"
-            android:parentActivityName=".TelaInicial" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.muritavo.photomemo.TelaInicial" />
-        </activity>
     </application>
 
 </manifest>

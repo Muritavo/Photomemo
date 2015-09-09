@@ -6,6 +6,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
@@ -17,21 +18,28 @@ import android.widget.ImageView;
 public class AdicionarDescricao extends Activity {
     private ImageLoaderAsync carregadorDeImagens;
     private String caminhoDaImagem;
-    private String descricaoDaImagem;
+    private String tituloDaImagem;
+    private int id;
+    private BancoDeDadosPhotomemo bancoDeDadosPhotomemo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ContentResolver cr = getContentResolver();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_adicionar_descricao);
+        bancoDeDadosPhotomemo = ((Photomemo) this.getApplication()).getBancoDeDadosPhotomemo(getApplicationContext());
 
         Intent intent = getIntent();
         caminhoDaImagem = intent.getStringExtra("path");
-        descricaoDaImagem = intent.getStringExtra("descricao");
+        tituloDaImagem = intent.getStringExtra("tituloImagem");
+
+        Cursor cur = cr.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new String[]{MediaStore.Images.ImageColumns.DATA, MediaStore.Images.ImageColumns._ID}, MediaStore.Images.ImageColumns.DATA + " LIKE ?", new String[]{"%" + tituloDaImagem + "%"}, null);
+        cur.moveToFirst();
+        id = cur.getInt(cur.getColumnIndex(MediaStore.Images.ImageColumns._ID));
+
         ImageView imageView = (ImageView) findViewById(R.id.preVisualizacao);
         carregadorDeImagens = ((Photomemo) this.getApplication()).getCarregadorDeImagem(getApplicationContext());
         carregadorDeImagens.carregarBitmap(caminhoDaImagem, imageView, true);
-
-        EditText descricao = (EditText) findViewById(R.id.campoDescricao);
 
         Button botao = (Button) findViewById(R.id.buttonSalvar);
         botao.setOnClickListener(salvar);
@@ -48,12 +56,7 @@ public class AdicionarDescricao extends Activity {
             EditText editTag = (EditText) findViewById(R.id.campoDescricao);
             String descricao = editTag.getText().toString();
             if (descricao.length() == 0) descricao = null;
-            ContentResolver cr = getContentResolver();
-            ContentValues cv = new ContentValues();
-            cv.put(MediaStore.Images.ImageColumns.DESCRIPTION, descricao);
-
-            cr.update(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv, MediaStore.Images.ImageColumns.DATA + " = ?", new String[]{ caminhoDaImagem });
-
+            bancoDeDadosPhotomemo.addDescricao(id, descricao);
             onBackPressed();
         }
     };

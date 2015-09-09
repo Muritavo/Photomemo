@@ -25,4 +25,5 @@
     <string name="enviar">Enviar Imagens</string>
     <string name="aviso">Selecione pelo menos uma imagem</string>
     <string name="atencao">"Tem certeza que deseja deletar essa imagem? \n Essa é uma ação irreversivel."</string>
+    <string name="aviso_sdk">Essa versão do Android não é suportada, o programa será fechado...</string>
 </resources>

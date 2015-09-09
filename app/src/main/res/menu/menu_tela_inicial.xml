@@ -14,5 +14,8 @@
         android:icon="@drawable/ic_search_white_24dp"/>
     <item android:id="@+id/compartilharImagens" android:title="@string/sendImage"
         android:orderInCategory="4" android:showAsAction="ifRoom"
-        android:icon="@drawable/ic_send_white_24dp"/>
+        android:icon="@drawable/ic_send_white_24dp" android:visible="false"/>
+    <item android:id="@+id/deletar_multiplos" android:title="@string/deletar"
+        android:orderInCategory="1" android:showAsAction="ifRoom"
+        android:icon="@drawable/ic_delete_white_24dp" android:visible="false"/>
 </menu>

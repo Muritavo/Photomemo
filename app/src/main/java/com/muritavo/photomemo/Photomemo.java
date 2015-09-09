@@ -13,6 +13,7 @@ public class Photomemo extends Application {
     private LruCache<String, Bitmap> imagensEmCache;
     private SimpleDateFormat formatter;
     private ImageLoaderAsync carregadorDeImagem;
+    private BancoDeDadosPhotomemo bancoDeDadosPhotomemo;
 
     /**
      * Reserva um espaço da memória para armazenar os icones de cada imagem
@@ -39,10 +40,13 @@ public class Photomemo extends Application {
         return formatter;
     }
 
+    public BancoDeDadosPhotomemo getBancoDeDadosPhotomemo(Context context){
+        if (bancoDeDadosPhotomemo == null) bancoDeDadosPhotomemo = new BancoDeDadosPhotomemo(context);
+        return bancoDeDadosPhotomemo;
+    }
+
     public ImageLoaderAsync getCarregadorDeImagem(Context context){
-        if (carregadorDeImagem == null){
-            carregadorDeImagem = new ImageLoaderAsync(context, getImagensEmCache());
-        }
+        if (carregadorDeImagem == null) carregadorDeImagem = new ImageLoaderAsync(context, getImagensEmCache());
         return carregadorDeImagem;
     }
 }
