@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
@@ -27,6 +28,7 @@ public class AdicionarDescricao extends Activity {
         ContentResolver cr = getContentResolver();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_adicionar_descricao);
+
         bancoDeDadosPhotomemo = ((Photomemo) this.getApplication()).getBancoDeDadosPhotomemo(getApplicationContext());
 
         Intent intent = getIntent();

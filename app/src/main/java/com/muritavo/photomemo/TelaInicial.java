@@ -1,13 +1,13 @@
 package com.muritavo.photomemo;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
+import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -19,10 +19,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.util.LruCache;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -31,6 +30,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CursorAdapter;
@@ -41,8 +42,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import java.io.File;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
@@ -86,7 +85,26 @@ public class TelaInicial extends Activity {
 
         //Obtem o ultimo modo de visualização deixado pelo usuario
         sharedPreferences = getSharedPreferences("photomemoTags", MODE_PRIVATE);
-
+        if (Build.VERSION.SDK_INT > 18){
+            NotificationCompat.Builder notification = new NotificationCompat.Builder(this)
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setContentText(getString(R.string.aviso_sdk))
+                    .setContentTitle(getString(R.string.app_name));
+            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            manager.notify(1, notification.build());
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    finish();
+                }
+            });
+            try {
+                Thread.sleep(1000);
+                thread.run();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         estaSelecionando = false;
         cr = this.getContentResolver();
         //Obtem o objeto que vai fazer a conexao com o banco de dados do aplicativo.
@@ -144,7 +162,7 @@ public class TelaInicial extends Activity {
         MenuItem botaoCamera = menu.findItem(R.id.abrir_camera);
         MenuItem botaoDeletar = menu.findItem(R.id.deletar_multiplos);
         //Ativa ou desativa o botao de envio conforme a necessidade.
-        if (estaSelecionando) {
+        if (estaSelecionando && imagensSelecionadas.size()!=0) {
             botaoDeletar.setVisible(true);
             botaoEnvio.setVisible(true);
             botaoBusca.setVisible(false);
@@ -191,10 +209,23 @@ public class TelaInicial extends Activity {
                 invalidateOptionsMenu();
                 layoutCampoDeBusca.setVisibility(View.VISIBLE);
                 campoDeBuscaEditText.addTextChangedListener(atualizaBusca);
+                campoDeBuscaEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                        InputMethodManager manager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                        if (hasFocus) {
+                            manager.showSoftInput(v, InputMethodManager.SHOW_IMPLICIT);
+                        } else {
+                            manager.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                        }
+                    }
+                });
+                campoDeBuscaEditText.requestFocus();
                 ocultarCampoDeBusca.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         layoutCampoDeBusca.setVisibility(View.GONE);
+                        campoDeBuscaEditText.clearFocus();
                         criaAdapter();
                         invalidateOptionsMenu();
                     }
