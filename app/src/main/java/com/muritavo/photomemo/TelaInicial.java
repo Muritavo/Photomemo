@@ -50,33 +50,7 @@ import java.util.ArrayList;
 import static android.provider.MediaStore.Images.*;
 
 public class TelaInicial extends Activity {
-    private boolean gridViewEstaAtivo; // Ultimo modo de view escolhido pelo usuario.
 
-    //Variaveis que indicam o local onde será salva a imagem que o usuario vai capturar
-    private Uri caminhoDaImagem = null;
-    private String tituloDaImagem;
-    private long dataDeCaptura = 0;
-
-    //Variaveis utilizadas na ação de seleção de diversas imagens
-    private ArrayList<Uri> imagensSelecionadas;
-    private boolean estaSelecionando;
-
-    //Elementos pertencentes ao layout
-    private LinearLayout layoutLista; //A parte do layout que mantem a lista de imagens
-    private LinearLayout layoutCampoDeBusca; //A parte do layout que mantem o campo de busca
-    private Button ocultarCampoDeBusca;
-    private EditText campoDeBuscaEditText;
-
-    //
-    private imageCursorAdapter adapter; //Adapter utilizado para popular a lista ou grade
-    private BancoDeDadosPhotomemo bancoDeDadosPhotomemo;
-    private ImageLoaderAsync carregadorDeImagens;
-    private ContentResolver cr;
-    public static Point dimensoes;
-    private SimpleDateFormat formatter; //Utilizado para converter a data de captura em um formato de data
-    private LruCache<String, Bitmap> imagensEmCache; //Cache onde serão armazenadas os icones de cada imagem
-    private SharedPreferences sharedPreferences;
-    private MediaScannerConnection connection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
